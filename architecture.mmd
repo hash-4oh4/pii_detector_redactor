@@ -1,0 +1,56 @@
+
+flowchart LR
+    subgraph Client
+        SE[Security Engineer (Browser)]
+    end
+
+    subgraph Frontend[Frontend (Next.js + Tailwind)]
+        Auth[Auth Middleware (cookie)]
+        Admin[Admin Panel (Config + SOPs + Users)]
+        Chat[Analyzer Chat UI]
+        Proxy[API Routes Proxy (/api/*)]
+        Dash[Dashboard (Bento + Logs + Tools)]
+    end
+
+    subgraph Backend[Backend (Express + MCP)]
+        API_Analyze[/api/analyze, /api/analyze/stream/]
+        API_Tools[/api/tools/]
+        API_Logs[/api/logs (SSE), /api/logs/recent/]
+        API_Users[/api/users, /api/auth/verify, /api/validate/]
+        MCP[MCP Server: analyze_findings, github_repo, trufflehog, browse_url, snyk_token_status]
+        SOP[SOP Service: search, upsert, enable/disable]
+    end
+
+    subgraph External[External Services/Tools]
+        Google[Google Gemini (Gen + Embeddings)]
+        GitHub[GitHub / GHE (Octokit + Raw)]
+        Snyk[Snyk (token status)]
+        Truffle[Trufflehog CLI]
+        HTTP[HTTP GET (browse_url)]
+    end
+
+    subgraph Database[Database (SQLite)]
+        DB1[analyses]
+        DB2[sops]
+        DB3[users]
+    end
+
+    %% Connections
+    SE --> Auth --> Chat --> Proxy
+    SE --> Admin --> Proxy
+    SE --> Dash --> Proxy
+
+    Proxy --> API_Analyze --> MCP
+    Proxy --> API_Tools
+    Proxy --> API_Logs
+    Proxy --> API_Users
+
+    MCP --> Google
+    MCP --> GitHub
+    MCP --> Truffle
+    MCP --> Snyk
+    SOP --> HTTP
+
+    API_Analyze --> DB1
+    SOP --> DB2
+    API_Users --> DB3
